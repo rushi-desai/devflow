@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: devflow-api/package-lock.json
+      - run: npm ci
+        working-directory: devflow-api
+      - run: npx prisma generate
+        working-directory: devflow-api
+      - run: npm run build
+        working-directory: devflow-api
