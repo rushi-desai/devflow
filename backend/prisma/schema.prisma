@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int                  @id @default(autoincrement())
+  name           String
+  email          String               @unique
+  password       String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organizations  Organization[]
+  memberships    OrganizationMember[]
+  projects       Project[]
+  assignedTasks  Task[]               @relation("TaskAssignee")
+  comments       Comment[]
+  activities     ActivityLog[]
+}
+
+model Organization {
+  id        Int                  @id @default(autoincrement())
+  name      String
+  ownerId   Int
+  owner     User                 @relation(fields: [ownerId], references: [id])
+  members   OrganizationMember[]
+  projects  Project[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+model OrganizationMember {
+  organizationId Int
+  userId         Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime     @default(now())
+
+  @@id([organizationId, userId])
+}
+
+model Project {
+  id             Int          @id @default(autoincrement())
+  name           String
+  description    String?
+  organizationId Int
+  ownerId        Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner          User         @relation(fields: [ownerId], references: [id])
+  boards         Board[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum BoardStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+model Board {
+  id        Int       @id @default(autoincrement())
+  name      String
+  projectId Int
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Task {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String?
+  status      BoardStatus @default(TODO)
+  boardId     Int
+  assigneeId  Int?
+  board       Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  assignee    User?       @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  taskId    Int
+  authorId  Int
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  entity    String
+  entityId  Int
+  userId    Int
+  metadata  Json?
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
