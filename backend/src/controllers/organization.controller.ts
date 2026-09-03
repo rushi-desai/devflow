@@ -55,6 +55,9 @@ export const addMember = async (req: Request, res: Response) => {
 };
 
 export const listMembers = async (req: Request, res: Response) => {
-  const data = await organizationService.listMembers(Number(req.params.organizationId));
+  const data = await organizationService.listMembers(
+    Number(req.params.organizationId),
+    req.user!.userId
+  );
   return res.json({ success: true, data });
 };

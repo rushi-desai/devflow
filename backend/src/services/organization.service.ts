@@ -84,6 +84,15 @@ export const addMember = async (
   userId: number,
   memberInput: { userId?: number | undefined; email?: string | undefined }
 ) => {
+  const organization = await prisma.organization.findFirst({
+    where: { id: organizationId, ownerId: userId },
+    select: { id: true }
+  });
+
+  if (!organization) {
+    throw new Error("ORGANIZATION_NOT_FOUND");
+  }
+
   let targetUserId = memberInput.userId;
 
   if (!targetUserId && memberInput.email) {
@@ -128,7 +137,16 @@ export const addMember = async (
   return membership;
 };
 
-export const listMembers = (organizationId: number) => {
+export const listMembers = async (organizationId: number, userId: number) => {
+  const organization = await prisma.organization.findFirst({
+    where: { id: organizationId, members: { some: { userId } } },
+    select: { id: true }
+  });
+
+  if (!organization) {
+    throw new Error("ORGANIZATION_NOT_FOUND");
+  }
+
   return prisma.organizationMember.findMany({
     where: { organizationId },
     include: {

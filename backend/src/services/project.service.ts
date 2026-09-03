@@ -63,29 +63,36 @@ export const createProject = async (
   userId: number,
   data: { name: string; description?: string | undefined }
 ) => {
-  const project = await prisma.project.create({
-    data: {
-      name: data.name,
-      ...(data.description ? { description: data.description } : {}),
-      organizationId,
-      ownerId: userId
-    },
-    include: {
-      boards: true,
-      owner: { select: { id: true, name: true, email: true } },
-      organization: { select: { id: true, name: true } }
-    }
+  const organization = await prisma.organization.findFirst({
+    where: { id: organizationId, members: { some: { userId } } },
+    select: { id: true }
   });
 
-  // Automatically create a default Board for this project (e.g. "Main Kanban")
-  const defaultBoard = await prisma.board.create({
-    data: {
-      name: "Main Kanban",
-      projectId: project.id
-    },
-    include: {
-      tasks: true
-    }
+  if (!organization) {
+    throw new Error("ORGANIZATION_NOT_FOUND");
+  }
+
+  const { project, defaultBoard } = await prisma.$transaction(async (transaction) => {
+    const project = await transaction.project.create({
+      data: {
+        name: data.name,
+        ...(data.description ? { description: data.description } : {}),
+        organizationId,
+        ownerId: userId
+      },
+      include: {
+        boards: true,
+        owner: { select: { id: true, name: true, email: true } },
+        organization: { select: { id: true, name: true } }
+      }
+    });
+
+    const defaultBoard = await transaction.board.create({
+      data: { name: "Main Kanban", projectId: project.id },
+      include: { tasks: true }
+    });
+
+    return { project, defaultBoard };
   });
 
   await logActivity(userId, "created", "project", project.id, { name: project.name });

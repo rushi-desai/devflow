@@ -7,17 +7,13 @@ export const list = async (req: Request, res: Response) => {
   if (!boardId) {
     return sendError(res, 400, "boardId is required");
   }
-  const data = await taskService.listTasks(boardId);
+  const data = await taskService.listTasks(boardId, req.user!.userId);
   return res.json({ success: true, data });
 };
 
 export const getById = async (req: Request, res: Response) => {
-  try {
-    const data = await taskService.getTaskById(Number(req.params.taskId));
-    return res.json({ success: true, data });
-  } catch {
-    return sendError(res, 404, "Task not found");
-  }
+  const data = await taskService.getTaskById(Number(req.params.taskId), req.user!.userId);
+  return res.json({ success: true, data });
 };
 
 export const create = async (req: Request, res: Response) => {

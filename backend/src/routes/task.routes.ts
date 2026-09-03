@@ -3,6 +3,8 @@ import { requireAuth } from "../middleware/auth";
 import { asyncHandler } from "../middleware/async-handler";
 import * as controller from "../controllers/task.controller";
 import commentRoutes from "./comment.routes";
+import { validate, validateParams, validateQuery } from "../middleware/validate";
+import { taskBodySchema, taskCreateBodySchema, taskParamsSchema, taskQuerySchema } from "../utils/validation";
 
 const router = Router({ mergeParams: true });
 router.use(requireAuth);
@@ -21,13 +23,13 @@ router.use(requireAuth);
  *     summary: Update task
  *     tags: [Tasks]
  */
-router.get("/", asyncHandler(controller.list));
-router.post("/", asyncHandler(controller.create));
-router.get("/:taskId", asyncHandler(controller.getById));
-router.patch("/:taskId", asyncHandler(controller.update));
-router.delete("/:taskId", asyncHandler(controller.remove));
+router.get("/", validateQuery(taskQuerySchema), asyncHandler(controller.list));
+router.post("/", validate(taskCreateBodySchema), asyncHandler(controller.create));
+router.get("/:taskId", validateParams(taskParamsSchema), asyncHandler(controller.getById));
+router.patch("/:taskId", validateParams(taskParamsSchema), validate(taskBodySchema), asyncHandler(controller.update));
+router.delete("/:taskId", validateParams(taskParamsSchema), asyncHandler(controller.remove));
 
 // Nested comments under task
-router.use("/:taskId/comments", commentRoutes);
+router.use("/:taskId/comments", validateParams(taskParamsSchema), commentRoutes);
 
 export default router;

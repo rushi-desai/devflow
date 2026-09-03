@@ -7,17 +7,13 @@ export const list = async (req: Request, res: Response) => {
   if (!projectId) {
     return sendError(res, 400, "projectId is required");
   }
-  const data = await boardService.listBoards(projectId);
+  const data = await boardService.listBoards(projectId, req.user!.userId);
   return res.json({ success: true, data });
 };
 
 export const getById = async (req: Request, res: Response) => {
-  try {
-    const data = await boardService.getBoardById(Number(req.params.boardId));
-    return res.json({ success: true, data });
-  } catch {
-    return sendError(res, 404, "Board not found");
-  }
+  const data = await boardService.getBoardById(Number(req.params.boardId), req.user!.userId);
+  return res.json({ success: true, data });
 };
 
 export const create = async (req: Request, res: Response) => {
@@ -32,7 +28,7 @@ export const create = async (req: Request, res: Response) => {
   const data = await boardService.createBoard(
     projectId,
     req.body.name.trim(),
-    req.user?.userId
+    req.user!.userId
   );
   return res.status(201).json({ success: true, data });
 };

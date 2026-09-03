@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as commentService from "../services/comment.service";
 
 export const list = async (req: Request, res: Response) => {
-  const data = await commentService.listComments(Number(req.params.taskId));
+  const data = await commentService.listComments(Number(req.params.taskId), req.user!.userId);
   return res.json({ success: true, data });
 };
 

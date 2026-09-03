@@ -1,9 +1,9 @@
 import prisma from "../config/prisma";
 import { logActivity } from "../utils/activity";
 
-export const listBoards = (projectId: number) => {
+export const listBoards = (projectId: number, userId: number) => {
   return prisma.board.findMany({
-    where: { projectId },
+    where: { projectId, project: { organization: { members: { some: { userId } } } } },
     include: {
       tasks: {
         include: {
@@ -22,9 +22,9 @@ export const listBoards = (projectId: number) => {
   });
 };
 
-export const getBoardById = async (boardId: number) => {
-  const board = await prisma.board.findUnique({
-    where: { id: boardId },
+export const getBoardById = async (boardId: number, userId: number) => {
+  const board = await prisma.board.findFirst({
+    where: { id: boardId, project: { organization: { members: { some: { userId } } } } },
     include: {
       project: {
         include: {
@@ -61,7 +61,16 @@ export const getBoardById = async (boardId: number) => {
   return board;
 };
 
-export const createBoard = async (projectId: number, name: string, userId?: number) => {
+export const createBoard = async (projectId: number, name: string, userId: number) => {
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, organization: { members: { some: { userId } } } },
+    select: { id: true }
+  });
+
+  if (!project) {
+    throw new Error("PROJECT_NOT_FOUND");
+  }
+
   const board = await prisma.board.create({
     data: { projectId, name },
     include: {
@@ -69,9 +78,7 @@ export const createBoard = async (projectId: number, name: string, userId?: numb
     }
   });
 
-  if (userId) {
-    await logActivity(userId, "created", "board", board.id, { name: board.name });
-  }
+  await logActivity(userId, "created", "board", board.id, { name: board.name });
 
   return board;
 };

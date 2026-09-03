@@ -12,12 +12,8 @@ export const list = async (req: Request, res: Response) => {
 };
 
 export const getById = async (req: Request, res: Response) => {
-  try {
-    const data = await projectService.getProjectById(Number(req.params.projectId), req.user!.userId);
-    return res.json({ success: true, data });
-  } catch {
-    return sendError(res, 404, "Project not found");
-  }
+  const data = await projectService.getProjectById(Number(req.params.projectId), req.user!.userId);
+  return res.json({ success: true, data });
 };
 
 export const create = async (req: Request, res: Response) => {

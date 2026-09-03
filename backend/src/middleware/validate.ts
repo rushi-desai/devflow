@@ -14,3 +14,29 @@ export const validate = (schema: ZodSchema) => {
     next();
   };
 };
+
+export const validateParams = (schema: ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.params);
+
+    if (!result.success) {
+      return sendError(res, 400, result.error.issues[0]?.message ?? "Invalid request");
+    }
+
+    req.params = result.data as Request["params"];
+    next();
+  };
+};
+
+export const validateQuery = (schema: ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.query);
+
+    if (!result.success) {
+      return sendError(res, 400, result.error.issues[0]?.message ?? "Invalid request");
+    }
+
+    req.query = result.data as Request["query"];
+    next();
+  };
+};
