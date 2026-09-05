@@ -2,12 +2,18 @@
 
 DevFlow is a multi-tenant project management application with organizations, projects, Kanban boards, tasks, comments, and an activity feed.
 
+## 🚀 Live Deployment
+
+- **Frontend:** https://devflow-brown.vercel.app
+- **Backend:** Azure App Service (F1)
+- **Database:** Neon PostgreSQL
+
 ## Stack
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS 4, React Router, Axios, and Lucide React
 - **Backend:** Node.js, Express 5, TypeScript, Zod, JWT, bcrypt, and Swagger UI
-- **Database:** PostgreSQL 16 with Prisma 6
-- **Deployment:** Docker Compose with separate PostgreSQL, API, and Nginx frontend containers
+- **Database:** Neon PostgreSQL (PostgreSQL 16 compatible)
+- **Deployment:** Vercel (Frontend), Azure App Service F1 (Backend), and Neon PostgreSQL (Database)
 
 ## Project Structure
 
@@ -151,14 +157,14 @@ The Docker database uses the credentials defined in the root `docker-compose.yml
 Protected endpoints require `Authorization: Bearer <jwt-token>`.
 
 | Area | Endpoints |
-| --- | --- |
+|------|-----------|
 | Health | `GET /`, `GET /health` |
 | Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `GET /auth/users` |
-| Organizations | `GET|POST /organizations`, `GET /organizations/:organizationId`, `GET /organizations/:organizationId/members`, `POST /organizations/:organizationId/members` |
-| Projects | `GET|POST /organizations/:organizationId/projects`, `GET /projects/:projectId` |
-| Boards | `GET|POST /projects/:projectId/boards`, `GET /boards/:boardId` |
-| Tasks | `GET|POST /boards/:boardId/tasks`, `GET /tasks/:taskId`, `PATCH|DELETE /boards/:boardId/tasks/:taskId` |
-| Comments | `GET|POST /tasks/:taskId/comments` |
+| Organizations | `GET\|POST /organizations`, `GET /organizations/:organizationId`, `GET /organizations/:organizationId/members`, `POST /organizations/:organizationId/members` |
+| Projects | `GET\|POST /organizations/:organizationId/projects`, `GET /projects/:projectId` |
+| Boards | `GET\|POST /projects/:projectId/boards`, `GET /boards/:boardId` |
+| Tasks | `GET\|POST /boards/:boardId/tasks`, `GET /tasks/:taskId`, `PATCH\|DELETE /boards/:boardId/tasks/:taskId` |
+| Comments | `GET\|POST /tasks/:taskId/comments` |
 | Activity | `GET /activities` |
 
 The complete request and response definitions are available in Swagger UI.
@@ -181,5 +187,3 @@ cd frontend
 npm run lint
 npm run build
 ```
-
-There is currently no backend test suite. The most important follow-up coverage is integration testing for cross-organization access, invalid IDs, duplicate members, and invalid task assignees.
